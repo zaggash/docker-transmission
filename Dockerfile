@@ -1,14 +1,19 @@
 FROM linuxserver/transmission
 MAINTAINER zaggash
 
-# install packages
+# install packages and NzbToMedia Requirements
 RUN \
  apk add --no-cache \
-	python
+	python && \
 
-# Setup NzbToMedia
-RUN \
- git -C /app clone -q  https://github.com/clinton-hall/nzbToMedia.git
+ apk add --no-cache --virtual=build-dependencies \
+        git && \
+
+ git -C /app clone -q  https://github.com/clinton-hall/nzbToMedia.git && \
+
+ apk del --purge \
+	build-dependencies && \
+ rm -rf /var/cache/apk/* /tmp/*
 
 # copy local files
 COPY root/ /
