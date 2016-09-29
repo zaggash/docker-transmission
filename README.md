@@ -1,4 +1,9 @@
 Based on linuxserver.io baseimage but NOT SUPPORTED by them.
+I added NzbToMedia in order to use the PostProcess effect from this script.
+
+# zaggash/docker-transmission
+[![](https://images.microbadger.com/badges/version/zaggash/docker-transmission.svg)](https://microbadger.com/images/zaggash/docker-transmission "Get your own version badge on microbadger.com")
+[hub]: https://hub.docker.com/r/zaggash/docker-transmission/
 
 Transmission is designed for easy, powerful use. Transmission has the features you want from a BitTorrent client: encryption, a web interface, peer exchange, magnet links, DHT, µTP, UPnP and NAT-PMP port forwarding, webseed support, watch directories, tracker editing, global and per-torrent speed limits, and more. [Transmission](http://www.transmissionbt.com/about/)
 
