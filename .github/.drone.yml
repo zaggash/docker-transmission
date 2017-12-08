@@ -1,0 +1,76 @@
+services:
+  docker:
+    image: docker:stable-dind
+    pull: true
+    privileged: true
+    command: [ '-H', 'unix:///drone/docker.sock' ]
+
+pipeline:
+  build-image:
+    image: docker:stable
+    pull: true
+    environment:
+      - DOCKER_HOST=unix:///drone/docker.sock
+    commands:
+      - sleep 5 # give docker enough time to initialize
+      - docker build --rm --label "org.label-schema.build-date=$(date +'%FT%R:%SZ')" -t ${DRONE_REPO_NAME}_${DRONE_BUILD_NUMBER} .
+      - docker image ls
+
+  test-image:
+    image: docker:stable
+    environment:
+      - DOCKER_HOST=unix:///drone/docker.sock
+    commands:
+      - apk add --no-cache jq py-pip
+      - pip install docker-compose
+      - docker-compose up -d
+      - sleep 20s
+      - export HEALTH=`docker container inspect test-container | jq -r '.[].State.Health.Status'`
+      - echo "$HEALTH"
+      - |
+         if [[ "$HEALTH" == "healthy" ]];
+           then exit 0;
+           else exit 127;
+         fi
+         
+  extract_version:
+    image: docker:stable
+    environment:
+      - DOCKER_HOST=unix:///drone/docker.sock
+      - PACKAGE=transmission-daemon
+    commands:
+      - docker run --name extract_version -e PKG=$PACKAGE ${DRONE_REPO_NAME}_${DRONE_BUILD_NUMBER} sh -c 'apk info -ve $PKG | sed "s#$PKG-##g" > /tmp/version'
+      - docker cp extract_version:/tmp/version ./
+    when:
+      event: [ push ]
+      branch: [ master ]
+      
+  tag-image:
+    image: docker:stable
+    environment:
+      - DOCKER_HOST=unix:///drone/docker.sock
+    commands:
+      - "docker tag ${DRONE_REPO_NAME}_${DRONE_BUILD_NUMBER} ${DRONE_REPO}:`cat ./version`"
+      - "docker tag ${DRONE_REPO_NAME}_${DRONE_BUILD_NUMBER} ${DRONE_REPO}:latest"
+    when:
+      event: [ push ]
+      branch: [ master ]
+      
+  push-image:
+    image: docker:stable
+    environment:
+      - DOCKER_HOST=unix:///drone/docker.sock
+    commands:
+      - docker login -u $${DOCKER_USERNAME} -p $${DOCKER_PASSWORD}
+      - "docker push ${DRONE_REPO}:`cat ./version`"
+      - docker push ${DRONE_REPO}:latest
+    secrets: [ docker_username, docker_password ]
+    when:
+      event: [ push ]
+      branch: [ master ]
+      
+  notify-slack:
+    image: plugins/slack
+    secrets: [ slack_webhook ]
+    when:
+      status: [ success, failure ]

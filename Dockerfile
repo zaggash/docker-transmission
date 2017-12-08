@@ -1,11 +1,18 @@
 FROM linuxserver/transmission
-MAINTAINER zaggash
+
+LABEL maintainer "zaggash"
 
 # install packages and NzbToMedia Requirements
 RUN \
+ apk del --no-cache \
+ 	transmission-cli \
+	transmission-daemon && \
  apk add --no-cache \
  	git \
-	python && \
+	python \
+	transmission-cli \
+	transmission-daemon && \
+
 
  git -C /app clone -q  https://github.com/clinton-hall/nzbToMedia.git && \
 
