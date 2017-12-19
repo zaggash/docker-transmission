@@ -73,4 +73,10 @@ pipeline:
     image: plugins/slack
     secrets: [ slack_webhook ]
     when:
-      status: [ success, failure ]
+      status: [ failure ]
+    template: >
+      Project: *<https://github.com/{{ repo.owner }}/{{ repo.name }}|{{ repo.name }}>* \n
+      Version: *<https://github.com/{{ repo.owner }}/{{ repo.name }}/tree/{{ build.commit }}|{{ build.branch }}>* \n
+      Author: *<https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ build.author }}>* \n
+      Status: *<{{ sys.link_url }}|{{ build.status }}>* \n
+      Duration: {{since build.started}}
