@@ -75,4 +75,4 @@ pipeline:
     when:
       status: [ success, failure ]
     template: >
-      {{ build.status }} - Duration: {{since build.started}} - Project: *<https://github.com/{{ repo.owner }}/{{ repo.name }}|{{ repo.name }}>* on *<https://github.com/{{ repo.owner }}/{{ repo.name }}/tree/{{ build.commit }}|{{ build.branch }}>* by *<https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ build.author }}>*
+      *{{ uppercase build.status }}* - Duration: {{since build.started}} Project: *<https://github.com/{{ repo.owner }}/{{ repo.name }}|{{ repo.name }}>* on *<https://github.com/{{ repo.owner }}/{{ repo.name }}/tree/{{ build.commit }}|{{ build.branch }}>* by *<https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ build.author }}>*
